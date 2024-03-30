@@ -20,6 +20,7 @@ To add new dataset, refer to the tutorial "docs/DATASETS.md".
 import os
 
 from detectron2.data import DatasetCatalog, MetadataCatalog
+from .balloon import get_balloon_dicts
 
 from .builtin_meta import ADE20K_SEM_SEG_CATEGORIES, _get_builtin_metadata
 from .cityscapes import load_cityscapes_instances, load_cityscapes_semantic
@@ -72,7 +73,6 @@ _PREDEFINED_SPLITS_COCO["coco_person"] = {
     ),
 }
 
-
 _PREDEFINED_SPLITS_COCO_PANOPTIC = {
     "coco_2017_train_panoptic": (
         # This is the original panoptic annotation directory
@@ -110,8 +110,8 @@ def register_all_coco(root):
             )
 
     for (
-        prefix,
-        (panoptic_root, panoptic_json, semantic_root),
+            prefix,
+            (panoptic_root, panoptic_json, semantic_root),
     ) in _PREDEFINED_SPLITS_COCO_PANOPTIC.items():
         prefix_instances = prefix[: -len("_panoptic")]
         instances_meta = MetadataCatalog.get(prefix_instances)
@@ -246,6 +246,13 @@ def register_all_ade20k(root):
         )
 
 
+def register_all_balloon(root):
+    root = os.path.join(root, "balloon")
+    for d in ["train", "val"]:
+        DatasetCatalog.register("balloon_" + d, lambda d=d: get_balloon_dicts(os.path.join(root, d)))
+        MetadataCatalog.get("balloon_" + d).set(thing_classes=["balloon"])
+
+
 # True for open source;
 # Internally at fb, we register them elsewhere
 if __name__.endswith(".builtin"):
@@ -257,3 +264,4 @@ if __name__.endswith(".builtin"):
     register_all_cityscapes_panoptic(_root)
     register_all_pascal_voc(_root)
     register_all_ade20k(_root)
+    register_all_balloon(_root)
